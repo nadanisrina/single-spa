@@ -1,0 +1,55 @@
+steps:
+  #################################################################
+  # Build
+  #################################################################
+  - id: "build"
+    name: "docker/compose:1.29.2"
+    args: [
+      "build",
+      "client"
+    ]
+    env:
+      - "COMPOSE_FILE=docker/docker-compose.production.yml"
+      - "COMPOSE_PROJECT_NAME=frontend-booster-react-spa"
+
+  #################################################################
+  # Tag
+  #################################################################
+  - name: "gcr.io/cloud-builders/docker"
+    args: [
+      "tag",
+      "frontend-booster-react-spa_client:production",
+      "gcr.io/$PROJECT_ID/client:$SHORT_SHA"
+    ]
+
+  - name: "gcr.io/cloud-builders/docker"
+    args: [
+      "tag",
+      "frontend-booster-react-spa_client:production",
+      "gcr.io/$PROJECT_ID/client:development"
+    ]
+
+  #################################################################
+  # Push
+  #################################################################
+  - id: "push"
+    name: "gcr.io/cloud-builders/docker"
+    args: [
+      "push",
+      "gcr.io/$PROJECT_ID/client"
+    ]
+
+  #################################################################
+  # Deploy
+  #################################################################
+  - id: "deploy"
+    name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: gcloud
+    args: [
+      "run", "deploy", "client-development",
+      "--allow-unauthenticated",
+      "--platform", "managed",
+      "--region", "us-central1",
+      "--image", "gcr.io/$PROJECT_ID/client:development",
+      "--set-env-vars", "APP_ENV=${_APP_ENV}"
+    ]

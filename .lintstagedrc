@@ -1,0 +1,9 @@
+{
+  "**/*.{tsx,ts}": [
+    "prettier --write **/*.{tsx,ts}",
+    "eslint --fix **/*.{tsx,ts}"
+  ],
+  "**/*.scss": [
+    "stylelint --fix **/*.scss"
+  ]
+}
